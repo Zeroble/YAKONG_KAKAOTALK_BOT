@@ -61,7 +61,7 @@ public class Listener extends NotificationListenerService {
                     if (session.message.contains("!가위") || session.message.contains("!바위") || session.message.contains("!보") || session.message.contains("!보자기"))
                         getRspResult();
                     if (session.message.contains("섹스") || session.message.contains("성관계"))
-                        send("중성화당해서 그런거 몰라아파요....");
+                        send("중성화당해서 그런거 몰라요....");
                     if (session.message.contains("아파") || session.message.contains("아프다")) {
                         send("아픈곳 핥아드릴께요");
                         send("핥핥");
