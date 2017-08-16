@@ -15,6 +15,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 /**
@@ -25,7 +27,8 @@ public class Listener extends NotificationListenerService {
     Context context;
     Session session = new Session();
     final static String BOT_NAME = "야꿍봇";
-
+    int today = 0;
+    String todayGupsic="";
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
@@ -55,7 +58,7 @@ public class Listener extends NotificationListenerService {
                         send("히익,,오늘도 그 강력하고 두꺼운 목줄로 저를,,");
                     if (session.message.contains("어디에"))
                         send("국정원 지하벙커!");
-                    if (session.message.equals("가위") || session.message.equals("바위") || session.message.equals("보") || session.message.equals("보자기"))
+                    if (session.message.contains("!가위") || session.message.contains("!바위") || session.message.contains("!보") || session.message.contains("!보자기"))
                         getRspResult();
                     if (session.message.contains("섹스") || session.message.contains("성관계"))
                         send("중성화당해서 그런거 몰라아파요....");
@@ -108,22 +111,31 @@ public class Listener extends NotificationListenerService {
     }
 
     public void getGupsic() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Document doc;
-                Elements links;
-                try {
-                    doc = Jsoup.connect("http://www.sunrint.hs.kr/index.do#none").get();
-                    links = doc.select("#index_board_mlsv_03_195699 > div > div > div > div > ul > li:nth-child(1) > dl > dd > p.menu");
-                    send(links.text());
-                } catch (IOException e) {
-                    e.printStackTrace();
+        long now = System.currentTimeMillis(); // 1970년 1월 1일부터 몇 밀리세컨드가 지났는지를 반환함
+        Date date = new Date(now);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");//형식 지정
+        final String getTime = simpleDateFormat.format(date);
+        if(Integer.parseInt(getTime) != today){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Document doc;
+                    Elements links;
+                    try {
+                        doc = Jsoup.connect("http://www.sunrint.hs.kr/index.do#none").get();
+                        links = doc.select("#index_board_mlsv_03_195699 > div > div > div > div > ul > li:nth-child(1) > dl > dd > p.menu");
+                        send(links.text());
+                        todayGupsic = links.text();
+                        today = Integer.parseInt(getTime);
+                        Log.i("new","new");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        thread.run();
-
+            }).run();
+        }
+        else
+            send(todayGupsic);
     }
 
     public void getRspResult() {
@@ -143,7 +155,7 @@ public class Listener extends NotificationListenerService {
                 send(BOT_NAME + " (이)는 바위를 냈다. 결과는 비김!");
             else if (botReslt == 2)
                 send(BOT_NAME + " (이)는 보를 냈다. 결과는" + BOT_NAME + "이 이김!");
-        } else if (session.message.contains("보") || session.message.equals("보자기")) {
+        } else if (session.message.contains("보") || session.message.contains("보자기")) {
             if (botReslt == 0)
                 send(BOT_NAME + " (이)는 가위를 냈다. 결과는" + BOT_NAME + "이 이김!");
             else if (botReslt == 1)
