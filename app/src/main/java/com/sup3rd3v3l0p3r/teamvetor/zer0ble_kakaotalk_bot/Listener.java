@@ -3,6 +3,7 @@ package com.sup3rd3v3l0p3r.teamvetor.zer0ble_kakaotalk_bot;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +18,14 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.GsonConverterFactory;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
 
 
 /**
@@ -29,6 +38,9 @@ public class Listener extends NotificationListenerService {
     final static String BOT_NAME = "야꿍봇";
     int today = 0;
     String todayGupsic="";
+    int tomorrow = 0;
+    String tomorrowGupsic = "";
+//    List<SaveUserMessage> list
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
@@ -82,8 +94,14 @@ public class Listener extends NotificationListenerService {
                         send("심심하다면 내가 놀아줄수도있다고..?집사");
                     if (session.message.contains("미뇽"))
                         send("미뇽\nミニリュウ 미니류\tNo.147\nDratin\n\n타입 : 드래곤\t분류 : 드래곤 포켓몬\n특성 : 탈피\t\t숨겨진 특성 : 이상한 비늘\nLV.100 경험치량 : 1,250,000\n\n키 : 1.8m\t몸무게 : 3.3kg\n\n" + "포획률 : 45\t성비 : 1:1\n부화 걸음수 : 10,240걸음");
-                    if (session.message.contains("급식"))
-                        getGupsic();
+                    if (session.message.contains("내일급식")||session.message.contains("내일 급식"))
+                        getTomorrowGupsic();
+                    else if (session.message.contains("급식"))
+                        getTodayGupsic();
+//                    if(session.message.contains("!메시지추가"))
+//                        addUserMessage();
+                    if(session.message.contains("한강온도"))
+                        getHangangTemp();
                 }
             stopSelf();
         }
@@ -110,7 +128,7 @@ public class Listener extends NotificationListenerService {
         String room;
     }
 
-    public void getGupsic() {
+    public void getTodayGupsic() {
         long now = System.currentTimeMillis(); // 1970년 1월 1일부터 몇 밀리세컨드가 지났는지를 반환함
         Date date = new Date(now);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");//형식 지정
@@ -130,14 +148,42 @@ public class Listener extends NotificationListenerService {
                         Log.i("new","new");
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }
-                }
+                    }                }
             }).run();
         }
         else
             send(todayGupsic);
     }
+    public void getTomorrowGupsic() {
+        long now = System.currentTimeMillis(); // 1970년 1월 1일부터 몇 밀리세컨드가 지났는지를 반환함
+        Date date = new Date(now);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");//형식 지정
+        final String getTime = simpleDateFormat.format(date);
+        if(Integer.parseInt(getTime) != tomorrow){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Document doc;
+                    Elements links;
+                    try {
+                        doc = Jsoup.connect("http://www.sunrint.hs.kr/index.do#none").get();
+                        links = doc.select("#index_board_mlsv_03_195699 > div > div > div > div > ul > li:nth-child(2) > dl > dd > p.menu");
+                        send(links.text());
+                        tomorrowGupsic = links.text();
+                        tomorrow = Integer.parseInt(getTime);
+                        Log.i("new","new");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }                }
+            }).run();
+        }
+        else
+            send(tomorrowGupsic);
+    }
 
+//    public void addUserMessage(){
+//        List.add(e,d);
+//    }
     public void getRspResult() {
         int botReslt = (int) (Math.random() * 3);
         Log.i("TAG", "getRspResult : " + botReslt);
@@ -164,5 +210,32 @@ public class Listener extends NotificationListenerService {
                 send(BOT_NAME + " (이)는 보를 냈다. 결과는 비김!");
         } else
             send("오류");
+    }
+    public interface HangangService {
+        @GET("/")
+        Call<getResult> items();
+    }
+    public void getHangangTemp(){
+        Log.i("NOTI","한강온도");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://hangang.dkserver.wo.tc")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        HangangService service = retrofit.create(HangangService.class);
+
+        Call<getResult> items = (Call<getResult>) service.items();
+        items.enqueue(new Callback<getResult>() {
+            @Override
+            public void onResponse(Call<getResult> call, Response<getResult> response) {
+                send("현재 한강온도는 "+response.body().getTemp()+"°C 입니다.\nlast update : "+response.body().getTime());
+            }
+            List<ClipData.Item> list;
+
+            @Override
+            public void onFailure(Call<getResult> call, Throwable throwable) {
+                send("정보를 불러오는데 실패하였습니다.");
+            }
+        });
     }
 }

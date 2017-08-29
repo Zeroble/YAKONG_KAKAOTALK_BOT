@@ -21,5 +21,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
             Toast.makeText(this, "알림읽기 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
         }
+        else
+            Toast.makeText(getApplicationContext(),"시작됨",Toast.LENGTH_SHORT).show();
     }
 }
