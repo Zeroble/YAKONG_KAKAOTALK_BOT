@@ -11,13 +11,6 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -33,14 +26,10 @@ import retrofit2.http.GET;
  */
 
 public class Listener extends NotificationListenerService {
-    Context context;
-    Session session = new Session();
-    final static String BOT_NAME = "야꿍봇";
-    int today = 0;
-    String todayGupsic="";
-    int tomorrow = 0;
-    String tomorrowGupsic = "";
-//    List<SaveUserMessage> list
+    static Context context;
+    static Session session = new Session();
+
+    //    List<SaveUserMessage> list
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
@@ -71,7 +60,7 @@ public class Listener extends NotificationListenerService {
                     if (session.message.contains("어디에"))
                         send("국정원 지하벙커!");
                     if (session.message.contains("!가위") || session.message.contains("!바위") || session.message.contains("!보") || session.message.contains("!보자기"))
-                        getRspResult();
+                        new RockScissorsPaperService().getRspResult(session.message);
                     if (session.message.contains("섹스") || session.message.contains("성관계"))
                         send("중성화당해서 그런거 몰라요....");
                     if (session.message.contains("아파") || session.message.contains("아프다")) {
@@ -83,7 +72,7 @@ public class Listener extends NotificationListenerService {
                     if (session.message.contains("쓰담"))
                         send("읏,,♥ (집사의 손 너무기분좋아,,)");
                     if (session.message.contains("힘들다"))
-                        send("으으,,너만 괜찮다면 내 꼬리를,,");
+                        send("으으..너만 괜찮다면 내 꼬리를..");
                     if (session.message.contains("히오스"))
                         send("♚♚히어로즈 오브 더 스☆톰♚♚가입시$$전원 카드팩☜☜뒷면100%증정※ ♜월드오브 워크래프트♜펫 무료증정￥ 특정조건 §§디아블로3§§★공허의유산★초상화획득기회@@ 즉시이동 http://kr.battle.net/heroes/ko/ ♚♚히어로즈 오브 더 스☆톰♚♚가입시$$전원 카드팩☜☜뒷면100%증정※ ♜월드오브 워크래프트♜펫 무료증정￥ 특정조건 §§디아블로3§§★공허의유산★초상화획득기회@@ 즉시이동http://kr.battle.net/heroes/ko/");
                     if (session.message.contains("애니추천"))
@@ -94,20 +83,28 @@ public class Listener extends NotificationListenerService {
                         send("심심하다면 내가 놀아줄수도있다고..?집사");
                     if (session.message.contains("미뇽"))
                         send("미뇽\nミニリュウ 미니류\tNo.147\nDratin\n\n타입 : 드래곤\t분류 : 드래곤 포켓몬\n특성 : 탈피\t\t숨겨진 특성 : 이상한 비늘\nLV.100 경험치량 : 1,250,000\n\n키 : 1.8m\t몸무게 : 3.3kg\n\n" + "포획률 : 45\t성비 : 1:1\n부화 걸음수 : 10,240걸음");
-                    if (session.message.contains("내일급식")||session.message.contains("내일 급식"))
-                        getTomorrowGupsic();
+
+                    if (session.message.contains("내일급식") || session.message.contains("내일 급식"))
+                        new getGupsic().getTomorrowLunch();
                     else if (session.message.contains("급식"))
-                        getTodayGupsic();
-//                    if(session.message.contains("!메시지추가"))
+                        new getGupsic().getTodayLunch();
+
+                    if (session.message.contains("내일석식") || session.message.contains("내일 석식"))
+                        new getGupsic().getTomorrowDinner();
+                    else if (session.message.contains("석식"))
+                        new getGupsic().getTodayDinner();
+//                   if(session.message.contains("!메시지추가"))
 //                        addUserMessage();
-                    if(session.message.contains("한강온도"))
+                    if (session.message.contains("한강온도"))
                         getHangangTemp();
+                    if (session.message.contains("시간표")) ;
+                    //TimeTable();
                 }
             stopSelf();
         }
     }
 
-    public void send(String massage) {
+    public static void send(String massage) {
         Intent sendIntent = new Intent();
         Bundle msg = new Bundle();
         for (RemoteInput inputable : session.session.getRemoteInputs())
@@ -121,102 +118,13 @@ public class Listener extends NotificationListenerService {
         }
     }
 
-    public class Session {
-        Notification.Action session;
-        String message;
-        String sender;
-        String room;
-    }
-
-    public void getTodayGupsic() {
-        long now = System.currentTimeMillis(); // 1970년 1월 1일부터 몇 밀리세컨드가 지났는지를 반환함
-        Date date = new Date(now);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");//형식 지정
-        final String getTime = simpleDateFormat.format(date);
-        if(Integer.parseInt(getTime) != today){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Document doc;
-                    Elements links;
-                    try {
-                        doc = Jsoup.connect("http://www.sunrint.hs.kr/index.do#none").get();
-                        links = doc.select("#index_board_mlsv_03_195699 > div > div > div > div > ul > li:nth-child(1) > dl > dd > p.menu");
-                        send(links.text());
-                        todayGupsic = links.text();
-                        today = Integer.parseInt(getTime);
-                        Log.i("new","new");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }                }
-            }).run();
-        }
-        else
-            send(todayGupsic);
-    }
-    public void getTomorrowGupsic() {
-        long now = System.currentTimeMillis(); // 1970년 1월 1일부터 몇 밀리세컨드가 지났는지를 반환함
-        Date date = new Date(now);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd");//형식 지정
-        final String getTime = simpleDateFormat.format(date);
-        if(Integer.parseInt(getTime) != tomorrow){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Document doc;
-                    Elements links;
-                    try {
-                        doc = Jsoup.connect("http://www.sunrint.hs.kr/index.do#none").get();
-                        links = doc.select("#index_board_mlsv_03_195699 > div > div > div > div > ul > li:nth-child(2) > dl > dd > p.menu");
-                        send(links.text());
-                        tomorrowGupsic = links.text();
-                        tomorrow = Integer.parseInt(getTime);
-                        Log.i("new","new");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }                }
-            }).run();
-        }
-        else
-            send(tomorrowGupsic);
-    }
-
-//    public void addUserMessage(){
-//        List.add(e,d);
-//    }
-    public void getRspResult() {
-        int botReslt = (int) (Math.random() * 3);
-        Log.i("TAG", "getRspResult : " + botReslt);
-        if (session.message.contains("가위")) {
-            if (botReslt == 0)
-                send(BOT_NAME + " (이)는 가위를 냈다. 결과는 비김!");
-            else if (botReslt == 1)
-                send(BOT_NAME + " (이)는 바위를 냈다. 결과는" + BOT_NAME + "이 이김!");
-            else if (botReslt == 2)
-                send(BOT_NAME + " (이)는 보를 냈다. 결과는" + BOT_NAME + "이 짐!");
-        } else if (session.message.contains("바위")) {
-            if (botReslt == 0)
-                send(BOT_NAME + " (이)는 가위를 냈다. 결과는" + BOT_NAME + "이 짐!");
-            else if (botReslt == 1)
-                send(BOT_NAME + " (이)는 바위를 냈다. 결과는 비김!");
-            else if (botReslt == 2)
-                send(BOT_NAME + " (이)는 보를 냈다. 결과는" + BOT_NAME + "이 이김!");
-        } else if (session.message.contains("보") || session.message.contains("보자기")) {
-            if (botReslt == 0)
-                send(BOT_NAME + " (이)는 가위를 냈다. 결과는" + BOT_NAME + "이 이김!");
-            else if (botReslt == 1)
-                send(BOT_NAME + " (이)는 바위를 냈다. 결과는" + BOT_NAME + "이 짐!");
-            else if (botReslt == 2)
-                send(BOT_NAME + " (이)는 보를 냈다. 결과는 비김!");
-        } else
-            send("오류");
-    }
     public interface HangangService {
         @GET("/")
         Call<getResult> items();
     }
-    public void getHangangTemp(){
-        Log.i("NOTI","한강온도");
+
+    public void getHangangTemp() {
+        Log.i("NOTI", "한강온도");
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://hangang.dkserver.wo.tc")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -228,8 +136,9 @@ public class Listener extends NotificationListenerService {
         items.enqueue(new Callback<getResult>() {
             @Override
             public void onResponse(Call<getResult> call, Response<getResult> response) {
-                send("현재 한강온도는 "+response.body().getTemp()+"°C 입니다.\nlast update : "+response.body().getTime());
+                send("현재 한강온도는 " + response.body().getTemp() + "°C 입니다.\nlast update : " + response.body().getTime());
             }
+
             List<ClipData.Item> list;
 
             @Override

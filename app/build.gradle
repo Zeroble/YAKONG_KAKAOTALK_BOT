@@ -31,5 +31,5 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta3'
     compile files('libs/jsoup-1.10.2.jar')
     compile files('libs/retrofit-2.3.0.jar')
-
+    compile files('libs/school-api-3.0.3.jar')
 }
