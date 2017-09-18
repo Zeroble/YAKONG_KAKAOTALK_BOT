@@ -87,18 +87,26 @@ public class Listener extends NotificationListenerService {
                     if (session.message.contains("내일급식") || session.message.contains("내일 급식"))
                         new getGupsic().getTomorrowLunch();
                     else if (session.message.contains("급식"))
-                        new getGupsic().getTodayLunch();
+                        if (session.message.contains("1") || session.message.contains("2") || session.message.contains("3") || session.message.contains("4") || session.message.contains("5") || session.message.contains("6") || session.message.contains("7") || session.message.contains("8") || session.message.contains("9") || session.message.contains("0"))
+                            new getGupsic().getTodayLunchByDay(Integer.parseInt(session.message.replaceAll("[^0-9]", "")));
+                        else
+                            new getGupsic().getTodayLunch();
 
                     if (session.message.contains("내일석식") || session.message.contains("내일 석식"))
                         new getGupsic().getTomorrowDinner();
                     else if (session.message.contains("석식"))
-                        new getGupsic().getTodayDinner();
+                        if (session.message.contains("1") || session.message.contains("2") || session.message.contains("3") || session.message.contains("4") || session.message.contains("5") || session.message.contains("6") || session.message.contains("7") || session.message.contains("8") || session.message.contains("9") || session.message.contains("0"))
+                            new getGupsic().getTodayDinnerByDay(Integer.parseInt(session.message.replaceAll("[^0-9]", "")));
+                        else
+                            new getGupsic().getTodayDinner();
 //                   if(session.message.contains("!메시지추가"))
 //                        addUserMessage();
                     if (session.message.contains("한강온도"))
                         getHangangTemp();
                     if (session.message.contains("시간표")) ;
                     //TimeTable();
+                    if(session.message.contains("!HELP")||session.message.contains("!도움")||session.message.contains("야꿍")||session.message.contains("#HELP"))
+                        send("급식커멘드\n급식/석식 - 오늘급식/석식 출력\n내일급식/내일석식 - 내일급식/석식 출력\n[특정일] 급식/석식 - 해당 날자의 급식/석식 출력\nex) 24 급식-->24일 급식");
                 }
             stopSelf();
         }

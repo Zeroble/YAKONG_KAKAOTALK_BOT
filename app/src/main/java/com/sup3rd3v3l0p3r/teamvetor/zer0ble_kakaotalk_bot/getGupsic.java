@@ -40,7 +40,14 @@ public class getGupsic {
         getDate today = new getDate();
         getDinner(today.YYYY,today.MM,today.DD);
     }
-
+    public void getTodayLunchByDay(int DD) {
+        getDate today = new getDate();
+        getLunch(today.YYYY,today.MM,DD);
+    }
+    public void getTodayDinnerByDay(int DD) {
+        getDate today = new getDate();
+        getDinner(today.YYYY,today.MM,DD);
+    }
     public void getTomorrowDinner() {
         getDate today = new getDate();
         getDinner(today.YYYY,today.MM,today.DD+1);
