@@ -11,6 +11,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import org.hyunjun.school.SchoolException;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -44,6 +46,7 @@ public class Listener extends NotificationListenerService {
                     session.message = sbn.getNotification().extras.get("android.text").toString();
                     session.sender = sbn.getNotification().extras.getString("android.title");
                     session.room = act.title.toString().replace("답장 (", "").replace(")", "");
+
                     Log.i("asd", "message : " + session.message + " nsender : " + session.sender + " nroom : " + session.room + " nsession : " + session);
                     if (session.message.contains("노무현"))
                         send("살아있다");
@@ -89,6 +92,8 @@ public class Listener extends NotificationListenerService {
                     else if (session.message.contains("급식"))
                         if (session.message.contains("1") || session.message.contains("2") || session.message.contains("3") || session.message.contains("4") || session.message.contains("5") || session.message.contains("6") || session.message.contains("7") || session.message.contains("8") || session.message.contains("9") || session.message.contains("0"))
                             new getGupsic().getTodayLunchByDay(Integer.parseInt(session.message.replaceAll("[^0-9]", "")));
+                        else if(session.message.contains("모든급식")||session.message.contains("전체급식"))
+                            new getGupsic().getAllLunch();
                         else
                             new getGupsic().getTodayLunch();
 
@@ -105,6 +110,12 @@ public class Listener extends NotificationListenerService {
                         getHangangTemp();
                     if (session.message.contains("시간표")) ;
                     //TimeTable();
+                    if(session.message.contains("학사일정"))
+                        try {
+                            new getSchoolScadule().sendSchoolScadule();
+                        } catch (SchoolException e) {
+                            e.printStackTrace();
+                        }
                     if(session.message.contains("!HELP")||session.message.contains("!도움")||session.message.contains("야꿍")||session.message.contains("#HELP"))
                         send("급식커멘드\n급식/석식 - 오늘급식/석식 출력\n내일급식/내일석식 - 내일급식/석식 출력\n[특정일] 급식/석식 - 해당 날자의 급식/석식 출력\nex) 24 급식-->24일 급식");
                 }

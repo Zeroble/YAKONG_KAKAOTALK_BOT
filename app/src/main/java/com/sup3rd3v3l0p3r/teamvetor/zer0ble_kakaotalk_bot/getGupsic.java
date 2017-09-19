@@ -71,5 +71,18 @@ public class getGupsic {
         }
     }
 
+    public void getAllLunch(){
+        getDate today = new getDate();
+        try {
+            List<SchoolMenu> menu = api.getMonthlyMenu(today.YYYY,today.MM);
+            String message = "";
+            for (int i=0;i<menu.size();i++)
+                message+=today.YYYY+"-"+today.MM+"-"+(i+1)+"\n"+menu.get(i).lunch.replace("&amp;","&")+"\n\n";
+            Listener.send(message);
+        } catch (SchoolException e) {
+            Listener.send("ERROR");
+            e.printStackTrace();
+        }
+    }
 
 }
